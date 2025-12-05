@@ -335,7 +335,7 @@ def get_slips():
         offset = (page - 1) * limit
 
         cursor.execute('''
-            SELECT id, bill_no, date, party_name, final_weight_kg, rate_basis,
+            SELECT id, bill_no, date, party_name, mobile_number, final_weight_kg, rate_basis,
                    payable_amount, instalment_1_amount, instalment_2_amount,
                    instalment_3_amount, instalment_4_amount, instalment_5_amount
             FROM purchase_slips

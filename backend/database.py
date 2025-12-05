@@ -217,6 +217,8 @@ def init_db():
             'postage': "DOUBLE DEFAULT 0",
             'payment_due_comment': "TEXT",
             'payment_bank_account': "TEXT",
+            'mobile_number': "VARCHAR(255)",
+            'moisture_ded_comment': "TEXT",
             'instalment_1_amount': "DOUBLE DEFAULT 0",
             'instalment_1_comment': "TEXT",
             'instalment_1_payment_method': "VARCHAR(255)",

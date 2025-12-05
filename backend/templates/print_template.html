@@ -337,6 +337,12 @@
                 <span>Moisture Ded.:</span>
                 <span>₹ {{ "%.2f"|format(slip.moisture_ded or 0) }}</span>
             </div>
+            {% if slip.moisture_ded_comment %}
+            <div class="calc-row">
+                <span>Moisture Ded. Comment:</span>
+                <span style="font-size: 8pt;">{{ slip.moisture_ded_comment }}</span>
+            </div>
+            {% endif %}
             <div class="calc-row">
                 <span>TDS:</span>
                 <span>₹ {{ "%.2f"|format(slip.tds or 0) }}</span>
@@ -375,34 +381,73 @@
             {% endif %}
         </div>
 
-        {% if slip.instalment_1 or slip.instalment_2 or slip.instalment_3 or slip.instalment_4 or slip.instalment_5 %}
+        {% if slip.instalment_1_date or slip.instalment_1_amount or slip.instalment_2_date or slip.instalment_2_amount or slip.instalment_3_date or slip.instalment_3_amount or slip.instalment_4_date or slip.instalment_4_amount or slip.instalment_5_date or slip.instalment_5_amount %}
         <div class="content-section">
             <div class="section-title">Payment Instalments</div>
-            {% if slip.instalment_1 %}
-            <div style="font-size: 9pt; margin-bottom: 6px;">
-                <strong>Instalment 1:</strong> {{ slip.instalment_1 }}
-            </div>
-            {% endif %}
-            {% if slip.instalment_2 %}
-            <div style="font-size: 9pt; margin-bottom: 6px;">
-                <strong>Instalment 2:</strong> {{ slip.instalment_2 }}
-            </div>
-            {% endif %}
-            {% if slip.instalment_3 %}
-            <div style="font-size: 9pt; margin-bottom: 6px;">
-                <strong>Instalment 3:</strong> {{ slip.instalment_3 }}
-            </div>
-            {% endif %}
-            {% if slip.instalment_4 %}
-            <div style="font-size: 9pt; margin-bottom: 6px;">
-                <strong>Instalment 4:</strong> {{ slip.instalment_4 }}
-            </div>
-            {% endif %}
-            {% if slip.instalment_5 %}
-            <div style="font-size: 9pt; margin-bottom: 6px;">
-                <strong>Instalment 5:</strong> {{ slip.instalment_5 }}
-            </div>
-            {% endif %}
+            <table style="width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 8pt;">
+                <thead>
+                    <tr style="background-color: #e0e0e0;">
+                        <th style="border: 1px solid #333; padding: 4px; text-align: left;">Instalment</th>
+                        <th style="border: 1px solid #333; padding: 4px; text-align: left;">Date</th>
+                        <th style="border: 1px solid #333; padding: 4px; text-align: right;">Amount</th>
+                        <th style="border: 1px solid #333; padding: 4px; text-align: left;">Method</th>
+                        <th style="border: 1px solid #333; padding: 4px; text-align: left;">Bank Account</th>
+                        <th style="border: 1px solid #333; padding: 4px; text-align: left;">Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if slip.instalment_1_date or slip.instalment_1_amount %}
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 4px; font-weight: bold;">1</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_1_date_formatted or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px; text-align: right;">₹{{ "%.2f"|format(slip.instalment_1_amount or 0) }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_1_payment_method or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_1_payment_bank_account or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_1_comment or '-' }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if slip.instalment_2_date or slip.instalment_2_amount %}
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 4px; font-weight: bold;">2</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_2_date_formatted or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px; text-align: right;">₹{{ "%.2f"|format(slip.instalment_2_amount or 0) }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_2_payment_method or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_2_payment_bank_account or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_2_comment or '-' }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if slip.instalment_3_date or slip.instalment_3_amount %}
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 4px; font-weight: bold;">3</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_3_date_formatted or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px; text-align: right;">₹{{ "%.2f"|format(slip.instalment_3_amount or 0) }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_3_payment_method or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_3_payment_bank_account or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_3_comment or '-' }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if slip.instalment_4_date or slip.instalment_4_amount %}
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 4px; font-weight: bold;">4</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_4_date_formatted or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px; text-align: right;">₹{{ "%.2f"|format(slip.instalment_4_amount or 0) }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_4_payment_method or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_4_payment_bank_account or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_4_comment or '-' }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if slip.instalment_5_date or slip.instalment_5_amount %}
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 4px; font-weight: bold;">5</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_5_date_formatted or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px; text-align: right;">₹{{ "%.2f"|format(slip.instalment_5_amount or 0) }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_5_payment_method or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_5_payment_bank_account or '-' }}</td>
+                        <td style="border: 1px solid #333; padding: 4px;">{{ slip.instalment_5_comment or '-' }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
         {% endif %}
 

@@ -367,37 +367,64 @@ ipcMain.on('print-slip', async (event, data) => {
         }
 
         function shareWhatsApp() {
-            if (!mobileNumber) {
-                alert('No mobile number found for this slip. Please add a mobile number in the slip details.');
+            if (!mobileNumber || mobileNumber === 'null' || mobileNumber.trim() === '') {
+                alert('No mobile number found for this slip.\\n\\nPlease add a mobile number in the slip details and try again.');
                 return;
             }
 
-            // Save PDF to temp directory
-            const tempDir = os.tmpdir();
-            const fileName = 'purchase_slip_' + slipId + '.pdf';
-            const filePath = path.join(tempDir, fileName);
+            try {
+                // Create permanent WhatsApp share folder in user's Documents
+                const documentsPath = path.join(os.homedir(), 'Documents', 'PurchaseSlipWhatsApp');
+                if (!fs.existsSync(documentsPath)) {
+                    fs.mkdirSync(documentsPath, { recursive: true });
+                }
 
-            // Convert base64 to buffer and save
-            const pdfBuffer = Buffer.from(pdfBase64, 'base64');
-            fs.writeFileSync(filePath, pdfBuffer);
+                // Save PDF to permanent folder with timestamp
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+                const fileName = 'Purchase_Slip_' + (billNo || slipId) + '_' + timestamp + '.pdf';
+                const filePath = path.join(documentsPath, fileName);
 
-            // Clean mobile number and construct WhatsApp URL
-            const cleanMobile = mobileNumber.replace(/[^0-9]/g, '');
-            const whatsappNumber = cleanMobile.startsWith('91') ? cleanMobile : '91' + cleanMobile;
+                // Convert base64 to buffer and save
+                const pdfBuffer = Buffer.from(pdfBase64, 'base64');
+                fs.writeFileSync(filePath, pdfBuffer);
 
-            const message = 'Purchase Slip - Bill No: ' + (billNo || slipId);
-            const whatsappUrl = 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(message);
+                // Clean mobile number and construct WhatsApp URL
+                const cleanMobile = mobileNumber.replace(/[^0-9]/g, '');
+                const whatsappNumber = cleanMobile.startsWith('91') ? cleanMobile : '91' + cleanMobile;
 
-            // Open WhatsApp Web
-            shell.openExternal(whatsappUrl);
+                const message = 'Purchase Slip - Bill No: ' + (billNo || slipId);
 
-            // Show instruction to user
-            setTimeout(() => {
-                alert('WhatsApp Web opened!\\n\\nThe PDF has been saved to:\\n' + filePath + '\\n\\nPlease manually attach this file to your WhatsApp message.');
+                // Try WhatsApp Desktop protocol first, fallback to WhatsApp Web
+                const whatsappDesktopUrl = 'whatsapp://send?phone=' + whatsappNumber + '&text=' + encodeURIComponent(message);
+                const whatsappWebUrl = 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(message);
 
-                // Open file location
-                shell.showItemInFolder(filePath);
-            }, 500);
+                // Try to open WhatsApp Desktop
+                shell.openExternal(whatsappDesktopUrl).catch(() => {
+                    // If Desktop fails, open WhatsApp Web
+                    shell.openExternal(whatsappWebUrl);
+                });
+
+                // Show file location and instructions
+                setTimeout(() => {
+                    const result = confirm(
+                        'WhatsApp opened successfully!\\n\\n' +
+                        'PDF saved to: ' + filePath + '\\n\\n' +
+                        'To share:\\n' +
+                        '1. Click the attachment (📎) icon in WhatsApp\\n' +
+                        '2. Select "Document"\\n' +
+                        '3. Navigate to the file location\\n' +
+                        '4. Select the PDF and send\\n\\n' +
+                        'Click OK to open the file location.'
+                    );
+
+                    if (result) {
+                        shell.showItemInFolder(filePath);
+                    }
+                }, 1000);
+            } catch (error) {
+                alert('Error sharing on WhatsApp:\\n\\n' + error.message + '\\n\\nPlease try again or contact support.');
+                console.error('WhatsApp share error:', error);
+            }
         }
 
         // Add keyboard shortcuts

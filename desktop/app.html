@@ -962,7 +962,7 @@
                                 <td>₹${parseFloat(slip.balance_amount || 0).toFixed(2)}</td>
                                 <td>
                                     <button class="btn btn-sm btn-info" onclick="viewSlip(${slip.id})">View</button>
-                                    <button class="btn btn-sm btn-success" onclick="printSlipDirect(${slip.id})">Print</button>
+                                    <button class="btn btn-sm btn-success" onclick="printSlipDirect(${slip.id}, '${slip.mobile_number || ''}', '${slip.bill_no}')">Print</button>
                                     <button class="btn btn-sm btn-danger" onclick="deleteSlip(${slip.id})">Delete</button>
                                 </td>
                             </tr>
@@ -988,19 +988,23 @@
                     currentSlipData = result.slip;
                     const slip = result.slip;
 
-                    // Generate instalment display with structured data
+                    // Generate instalment display with all 5 fields
                     let instalmentHTML = '';
                     for (let i = 1; i <= 5; i++) {
                         const date = slip[`instalment_${i}_date`];
                         const amount = slip[`instalment_${i}_amount`];
+                        const paymentMethod = slip[`instalment_${i}_payment_method`];
+                        const paymentBankAccount = slip[`instalment_${i}_payment_bank_account`];
                         const comment = slip[`instalment_${i}_comment`];
 
-                        if (date || amount > 0 || comment) {
+                        if (date || amount > 0 || paymentMethod || paymentBankAccount || comment) {
                             instalmentHTML += `
                                 <div class="instalment-card">
                                     <h6>Instalment ${i}</h6>
                                     <div><strong>Date:</strong> ${date || '-'}</div>
                                     <div><strong>Amount:</strong> ₹${parseFloat(amount || 0).toFixed(2)}</div>
+                                    <div><strong>Payment Method:</strong> ${paymentMethod || '-'}</div>
+                                    <div><strong>Payment Bank Account:</strong> ${paymentBankAccount || '-'}</div>
                                     <div><strong>Comment:</strong> ${comment || '-'}</div>
                                 </div>
                             `;
@@ -1089,6 +1093,7 @@
                                     <tr><td>Rate Diff</td><td>₹${slip.rate_diff || 0}</td></tr>
                                     <tr><td>Quality Diff</td><td>₹${slip.quality_diff || 0}</td></tr>
                                     <tr><td>Moisture Ded</td><td>₹${slip.moisture_ded || 0}</td></tr>
+                                    ${slip.moisture_ded_comment ? `<tr><td>Moisture Ded. Comment</td><td>${slip.moisture_ded_comment}</td></tr>` : ''}
                                     <tr><td>TDS</td><td>₹${slip.tds || 0}</td></tr>
                                     <tr><td>Total Deduction</td><td><strong>₹${slip.total_deduction || 0}</strong></td></tr>
                                 </table>
@@ -1243,10 +1248,12 @@
             }
         }
 
-        function printSlipDirect(slipId) {
+        function printSlipDirect(slipId, mobileNumber, billNo) {
             // Send print request to Electron main process with slip data
-            const slip = currentSlipData || { id: slipId };
-            ipcRenderer.send('print-slip', { slipId, mobileNumber: slip.mobile_number, billNo: slip.bill_no });
+            // Use parameters if provided, otherwise use currentSlipData
+            const mobile = mobileNumber || (currentSlipData ? currentSlipData.mobile_number : null);
+            const bill = billNo || (currentSlipData ? currentSlipData.bill_no : null);
+            ipcRenderer.send('print-slip', { slipId, mobileNumber: mobile, billNo: bill });
         }
 
         async function deleteSlip(slipId) {
