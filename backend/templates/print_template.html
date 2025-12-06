@@ -330,19 +330,13 @@
                 <span>₹ {{ "%.2f"|format(slip.rate_diff or 0) }}</span>
             </div>
             <div class="calc-row">
-                <span>Quality Diff.:</span>
+                <span>Quality Diff.{% if slip.quality_diff_comment %} ({{ slip.quality_diff_comment }}){% endif %}:</span>
                 <span>₹ {{ "%.2f"|format(slip.quality_diff or 0) }}</span>
             </div>
             <div class="calc-row">
-                <span>Moisture Ded.:</span>
+                <span>Moisture Ded.{% if slip.moisture_ded_comment %} ({{ slip.moisture_ded_comment }}){% endif %}:</span>
                 <span>₹ {{ "%.2f"|format(slip.moisture_ded or 0) }}</span>
             </div>
-            {% if slip.moisture_ded_comment %}
-            <div class="calc-row">
-                <span>Moisture Ded. Comment:</span>
-                <span style="font-size: 8pt;">{{ slip.moisture_ded_comment }}</span>
-            </div>
-            {% endif %}
             <div class="calc-row">
                 <span>TDS:</span>
                 <span>₹ {{ "%.2f"|format(slip.tds or 0) }}</span>
