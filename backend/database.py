@@ -205,6 +205,7 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        print("✅ Table 'unloading_godowns' verified/created")
 
         # Check and add missing columns to purchase_slips
         cursor.execute("SHOW COLUMNS FROM purchase_slips")

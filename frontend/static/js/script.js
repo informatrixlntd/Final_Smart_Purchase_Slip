@@ -1,4 +1,69 @@
+console.log('🚀 script.js loaded successfully at ' + new Date().toISOString());
+
+// Global function for inline onclick fallback
+window.handleSaveGodown = function() {
+    console.log('🎯 GLOBAL handleSaveGodown called');
+    const godownInput = document.getElementById('paddy_unloading_godown');
+    const godownDatalist = document.getElementById('godownList');
+    const saveGodownBtn = document.getElementById('saveGodownBtn');
+
+    if (!godownInput) {
+        console.error('❌ godownInput not found');
+        alert('Error: Godown input field not found');
+        return;
+    }
+
+    const enteredValue = godownInput.value.trim();
+    console.log('📝 Entered value:', enteredValue);
+
+    if (!enteredValue) {
+        alert('Please enter a godown name');
+        return;
+    }
+
+    // Save to backend
+    saveGodownBtn.disabled = true;
+    saveGodownBtn.textContent = 'Saving...';
+
+    fetch('/api/unloading-godowns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: enteredValue })
+    })
+    .then(response => {
+        console.log('✅ Response status:', response.status);
+        return response.json();
+    })
+    .then(result => {
+        console.log('✅ Response data:', result);
+        if (result.success) {
+            // Update dropdown
+            if (result.godowns && Array.isArray(result.godowns)) {
+                godownDatalist.innerHTML = '';
+                result.godowns.forEach(godown => {
+                    const option = document.createElement('option');
+                    option.value = godown.name;
+                    godownDatalist.appendChild(option);
+                });
+            }
+            alert(`✅ Godown "${enteredValue}" saved successfully!`);
+            console.log('✅ Godown saved and dropdown updated');
+        } else {
+            alert('❌ Error saving godown: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error:', error);
+        alert('❌ Error saving godown. Please try again.\n\nDetails: ' + error.message);
+    })
+    .finally(() => {
+        saveGodownBtn.disabled = false;
+        saveGodownBtn.textContent = 'Save New Godown';
+    });
+};
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOMContentLoaded event fired');
     const form = document.getElementById('purchaseForm');
     const dateInput = document.getElementById('date');
     const billNoInput = document.getElementById('bill_no');
@@ -331,9 +396,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // Attach click event to Save button
     if (saveGodownBtn) {
         console.log('✓ Attaching click handler to Save Godown button');
-        saveGodownBtn.addEventListener('click', saveNewGodown);
+        saveGodownBtn.addEventListener('click', function(e) {
+            console.log('🎯 BUTTON CLICKED - Direct event handler triggered');
+            e.preventDefault();
+            e.stopPropagation();
+            saveNewGodown();
+        });
+
+        // Add additional click listener for debugging
+        saveGodownBtn.onclick = function(e) {
+            console.log('🎯 BUTTON CLICKED - onclick handler triggered');
+        };
+
+        // Show ready status
+        const statusIndicator = document.getElementById('godownStatus');
+        if (statusIndicator) {
+            statusIndicator.style.display = 'block';
+        }
+
+        // Update debug info
+        const debugText = document.getElementById('debugText');
+        if (debugText) {
+            debugText.textContent = `Script loaded ✓ | Button found ✓ | Click handler attached ✓ | Time: ${new Date().toLocaleTimeString()}`;
+        }
     } else {
         console.error('❌ Cannot attach click handler - saveGodownBtn not found');
+
+        // Show debug info
+        const debugInfo = document.getElementById('debugInfo');
+        const debugText = document.getElementById('debugText');
+        if (debugInfo && debugText) {
+            debugInfo.style.display = 'block';
+            debugText.textContent = '❌ ERROR: saveGodownBtn not found! Button ID might be incorrect.';
+        }
     }
 
     // Load godowns when page loads
@@ -344,6 +439,87 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('❌ Godown elements missing, skipping loadGodowns()');
     }
 });
+
+// Event delegation fallback - attach to document
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'saveGodownBtn') {
+        console.log('🎯 BUTTON CLICKED via event delegation');
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Call save function directly
+        const godownInput = document.getElementById('paddy_unloading_godown');
+        const godownDatalist = document.getElementById('godownList');
+        const saveGodownBtn = document.getElementById('saveGodownBtn');
+
+        if (!godownInput) {
+            console.error('❌ godownInput not found');
+            alert('Error: Godown input field not found');
+            return;
+        }
+
+        const enteredValue = godownInput.value.trim();
+        console.log('📝 Entered value:', enteredValue);
+
+        if (!enteredValue) {
+            alert('Please enter a godown name');
+            return;
+        }
+
+        // Get current godowns
+        let allGodowns = [];
+        const existingOptions = godownDatalist ? godownDatalist.querySelectorAll('option') : [];
+        existingOptions.forEach(opt => {
+            if (opt.value) allGodowns.push({ name: opt.value });
+        });
+
+        // Check if exists
+        const exists = allGodowns.some(g => g.name.toLowerCase() === enteredValue.toLowerCase());
+        if (exists) {
+            alert('This godown already exists in the list');
+            return;
+        }
+
+        // Save to backend
+        saveGodownBtn.disabled = true;
+        saveGodownBtn.textContent = 'Saving...';
+
+        fetch('/api/unloading-godowns', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: enteredValue })
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(result => {
+            console.log('Response data:', result);
+            if (result.success) {
+                // Update dropdown
+                if (result.godowns && Array.isArray(result.godowns)) {
+                    godownDatalist.innerHTML = '';
+                    result.godowns.forEach(godown => {
+                        const option = document.createElement('option');
+                        option.value = godown.name;
+                        godownDatalist.appendChild(option);
+                    });
+                }
+                alert(`Godown "${enteredValue}" saved successfully!`);
+            } else {
+                alert('Error saving godown: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error:', error);
+            alert('Error saving godown. Please try again.');
+        })
+        .finally(() => {
+            saveGodownBtn.disabled = false;
+            saveGodownBtn.textContent = 'Save New Godown';
+        });
+    }
+}, true); // Use capture phase
 
 // ===== DYNAMIC INSTALMENT MANAGEMENT =====
 let visibleInstalments = [1]; // Track which instalments are shown

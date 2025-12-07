@@ -291,10 +291,21 @@
     class="btn btn-success w-100"
     id="saveGodownBtn"
     title="Click to save new godown to database"
+    onclick="console.log('🎯 INLINE ONCLICK FIRED'); if(window.handleSaveGodown) window.handleSaveGodown();"
+    style="position: relative;"
 >
     Save New Godown
 </button>
+                            <small class="form-text text-success" id="godownStatus" style="display:none;">✓ Ready</small>
+                        </div>
+                    </div>
 
+                    <!-- DEBUG INFO -->
+                    <div class="row mb-2" style="display:none;" id="debugInfo">
+                        <div class="col-md-12">
+                            <div class="alert alert-info" style="font-size: 11px; padding: 5px;">
+                                <strong>🔧 Debug:</strong> <span id="debugText">Checking...</span>
+                            </div>
                         </div>
                     </div>
 

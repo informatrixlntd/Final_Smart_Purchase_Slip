@@ -726,6 +726,10 @@ def print_slip(slip_id):
 @slips_bp.route('/api/unloading-godowns', methods=['GET'])
 def get_unloading_godowns():
     """Get all unloading godown names for dropdown"""
+    print("\n" + "="*60)
+    print("🔵 GET /api/unloading-godowns - Request received")
+    print("="*60)
+
     conn = None
     cursor = None
     try:
@@ -740,7 +744,9 @@ def get_unloading_godowns():
 
         godowns = cursor.fetchall()
 
-        print(f"✓ Fetched {len(godowns)} unloading godowns")
+        print(f"✅ Fetched {len(godowns)} unloading godowns")
+        if godowns:
+            print(f"📋 Godown list: {[g['name'] for g in godowns]}")
 
         return jsonify({
             'success': True,
@@ -767,11 +773,18 @@ def get_unloading_godowns():
 @slips_bp.route('/api/unloading-godowns', methods=['POST'])
 def add_unloading_godown():
     """Add a new unloading godown (or return existing if duplicate)"""
+    print("\n" + "="*60)
+    print("🔵 POST /api/unloading-godowns - Request received")
+    print("="*60)
+
     conn = None
     cursor = None
     try:
         data = request.get_json()
+        print(f"📥 Request data: {data}")
+
         godown_name = data.get('name', '').strip()
+        print(f"📝 Godown name: '{godown_name}'")
 
         if not godown_name:
             return jsonify({
