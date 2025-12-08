@@ -709,7 +709,10 @@ def print_slip(slip_id):
             if slip.get(field):
                 slip[f'{field}_formatted'] = format_ist_datetime(slip[field])
 
-        return render_template('print_template_new.html', slip=slip)
+        # Get logo path for the print template
+        logo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'desktop', 'assets', 'spslogo.png'))
+
+        return render_template('print_template_new.html', slip=slip, logo_path=logo_path)
 
     except Exception as e:
         print(f"Error rendering print: {e}")

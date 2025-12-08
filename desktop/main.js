@@ -13,20 +13,43 @@ let canCloseApp = false;
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 function createWindow() {
+    // Create splash screen first
+    let splashWindow = new BrowserWindow({
+        width: 500,
+        height: 500,
+        transparent: true,
+        frame: false,
+        alwaysOnTop: true,
+        icon: path.join(__dirname, 'assets', 'spslogo.png'),
+        webPreferences: {
+            nodeIntegration: false
+        }
+    });
+
+    splashWindow.loadFile(path.join(__dirname, 'splash.html'));
+
     mainWindow = new BrowserWindow({
         width: 1400,
         height: 900,
-        icon: path.join(__dirname, 'assets', 'icon.png'),
+        icon: path.join(__dirname, 'assets', 'spslogo.png'),
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
             enableRemoteModule: true
         },
         autoHideMenuBar: true,
-        resizable: true
+        resizable: true,
+        show: false
     });
 
     mainWindow.loadFile(path.join(__dirname, 'login.html'));
+
+    mainWindow.once('ready-to-show', () => {
+        setTimeout(() => {
+            splashWindow.close();
+            mainWindow.show();
+        }, 2000);
+    });
 
     mainWindow.on('close', async (event) => {
         if (!canCloseApp && !isBackupInProgress) {
@@ -328,6 +351,7 @@ ipcMain.on('print-slip', async (event, data) => {
         const viewerWindow = new BrowserWindow({
             width: 900,
             height: 1200,
+            icon: path.join(__dirname, 'assets', 'spslogo.png'),
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false

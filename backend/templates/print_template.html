@@ -57,6 +57,14 @@
             border-bottom: 2px solid #000;
             padding-bottom: 10px;
             margin-bottom: 15px;
+            position: relative;
+        }
+
+        .header-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            display: block;
         }
 
         .header h1 {
@@ -205,6 +213,7 @@
 
     <div class="slip-container">
         <div class="header">
+            <img src="file:///{{ logo_path }}" alt="Logo" class="header-logo" onerror="this.style.display='none'">
             <div class="company-info">
                 <strong>{{ slip.company_name or 'Company Name' }}</strong><br>
                 {{ slip.company_address or 'Company Address' }}
