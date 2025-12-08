@@ -199,6 +199,84 @@ ipcMain.on('logout', () => {
 });
 
 /**
+ * Print slip HTML directly (correct method)
+ * Loads the actual HTML from Flask and prints it using webContents.print()
+ * This is the proper way to print - NOT from PDF viewer
+ */
+ipcMain.on('print-slip-html', async (event, slipId) => {
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`🖨️  PRINTING SLIP HTML - ID: ${slipId}`);
+    console.log('='.repeat(60));
+
+    let printWindow = null;
+
+    try {
+        // Create hidden window to load the actual HTML slip
+        printWindow = new BrowserWindow({
+            width: 800,
+            height: 1100,
+            show: false, // Hidden window for printing
+            webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true
+            }
+        });
+
+        console.log(`📄 Loading slip HTML from: http://localhost:5000/print/${slipId}`);
+
+        // Load the actual HTML from Flask server
+        await printWindow.loadURL(`http://localhost:5000/print/${slipId}`);
+
+        // Wait for content to fully render
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        console.log('✅ HTML loaded successfully, initiating print...');
+
+        // Print the HTML directly using webContents.print()
+        printWindow.webContents.print({
+            silent: false, // Show print dialog
+            printBackground: true, // Include background colors/images
+            color: true,
+            margins: {
+                marginType: 'none'
+            },
+            landscape: false,
+            pagesPerSheet: 1,
+            collate: false,
+            copies: 1
+        }, (success, failureReason) => {
+            if (success) {
+                console.log('✅ Print job sent successfully');
+            } else {
+                console.error('❌ Print failed:', failureReason);
+            }
+
+            // Clean up the print window
+            if (printWindow && !printWindow.isDestroyed()) {
+                printWindow.close();
+                printWindow = null;
+                console.log('🧹 Print window closed');
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error during HTML print:', error);
+
+        // Clean up print window if it exists
+        if (printWindow && !printWindow.isDestroyed()) {
+            printWindow.close();
+        }
+
+        // Show error to user
+        const { dialog } = require('electron');
+        dialog.showErrorBox(
+            'Print Error',
+            `Failed to print slip:\n\n${error.message}\n\nPlease ensure the Flask server is running.`
+        );
+    }
+});
+
+/**
  * Print slip handler with PDF preview
  * Generates PDF using printToPDF and displays in custom viewer
  * User can print, download, or share on WhatsApp from the viewer
@@ -345,7 +423,7 @@ ipcMain.on('print-slip', async (event, data) => {
     <iframe id="pdf-container" src="data:application/pdf;base64,${pdfBase64}"></iframe>
 
     <script>
-        const { shell } = require('electron');
+        const { shell, ipcRenderer } = require('electron');
         const fs = require('fs');
         const path = require('path');
         const os = require('os');
@@ -356,7 +434,10 @@ ipcMain.on('print-slip', async (event, data) => {
         const billNo = ${billNo ? `'${billNo}'` : 'null'};
 
         function printPDF() {
-            window.print();
+            // FIXED: Print the actual HTML slip using IPC
+            // DO NOT use window.print() - it doesn't work with PDF iframes
+            console.log('🖨️  Print button clicked - sending IPC to print HTML');
+            ipcRenderer.send('print-slip-html', slipId);
         }
 
         function downloadPDF() {
@@ -431,7 +512,8 @@ ipcMain.on('print-slip', async (event, data) => {
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'p') {
                 e.preventDefault();
-                printPDF();
+                console.log('⌨️  Ctrl+P pressed - triggering print');
+                printPDF(); // This now calls the IPC method, not window.print()
             }
         });
     </script>
